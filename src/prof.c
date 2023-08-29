@@ -598,6 +598,21 @@ prof_backtrace(prof_bt_t *bt) {
 	}
 	bt->len = nframes;
 }
+#elif JEMALLOC_PROF_LIBUNWIND_OLD
+void
+prof_backtrace(prof_bt_t *bt) {
+    int nframes;
+
+    cassert(config_prof);
+    assert(bt->len == 0);
+    assert(bt->vec != NULL);
+
+    nframes = unw_backtrace_old(bt->vec, PROF_BT_MAX);
+    if (nframes <= 0) {
+        return;
+    }
+    bt->len = nframes;
+}
 #elif (defined(JEMALLOC_PROF_LIBGCC))
 static _Unwind_Reason_Code
 prof_unwind_init_callback(struct _Unwind_Context *context, void *arg) {
