@@ -63,6 +63,24 @@ prof_backtrace_impl(void **vec, unsigned *len, unsigned max_len) {
 	}
 	*len = nframes;
 }
+#elif (defined(JEMALLOC_PROF_LIBUNWIND_OLD))
+extern int unw_backtrace_old (void **, int);
+
+static void
+prof_backtrace_impl(void **vec, unsigned *len, unsigned max_len) {
+	int nframes;
+
+	cassert(config_prof);
+	assert(*len == 0);
+	assert(vec != NULL);
+	assert(max_len == PROF_BT_MAX);
+
+	nframes = unw_backtrace_old(vec, PROF_BT_MAX);
+	if (nframes <= 0) {
+		return;
+	}
+	*len = nframes;
+}
 #elif (defined(JEMALLOC_PROF_LIBGCC))
 static _Unwind_Reason_Code
 prof_unwind_init_callback(struct _Unwind_Context *context, void *arg) {
